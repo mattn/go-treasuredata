@@ -165,7 +165,24 @@ type Job struct {
 	JobId string `json:"job_id"`
 }
 
-func (c *client) JobIssueHive(database string, query string, priority int) (*Job, error) {
+func (c *client) JobIssueHive(database string, query string) (*Job, error) {
+	params := make(url.Values)
+	params.Set("query", query)
+	res, err := c.post("/v3/job/issue/hive/"+url.QueryEscape(database), params)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var r Job
+	err = json.NewDecoder(tee(res.Body, c.Debug)).Decode(&r)
+	if err != nil {
+		return nil, err
+	}
+	return &r, nil
+}
+
+func (c *client) JobIssueHiveWithPriority(database string, query string, priority int) (*Job, error) {
 	params := make(url.Values)
 	params.Set("query", query)
 	params.Set("priority", fmt.Sprint(priority))
