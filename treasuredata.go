@@ -224,8 +224,8 @@ func (c *client) JobStatus(jobId string) (*Status, error) {
 	return &r, nil
 }
 
-func (c *client) JobResult(jobId string, cb func(line string) error) error {
-	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=json")
+func (c *client) JobResultFunc(jobId string, typ string, cb func(line string) error) error {
+	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=" + url.QueryEscape(typ))
 	if err != nil {
 		return err
 	}

@@ -45,7 +45,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = client.JobResult(job.JobId, func(line string) error {
+		err = client.JobResultFunc(job.JobId, "json", func(line string) error {
 			fmt.Println(line)
 			return nil
 		})
