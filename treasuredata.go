@@ -50,6 +50,10 @@ func (tdt *tdTime) UnmarshalJSON(data []byte) error {
 	if len(data) < 2 || (len(data) == 2 && string(data) == `""`) {
 		return nil
 	}
+	if len(data) == 4 && string(data) == `null` {
+		return nil
+	}
+
 	b := bytes.NewBuffer(data)
 	if err := json.NewDecoder(b).Decode(&s); err != nil {
 		return err
