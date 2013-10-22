@@ -15,7 +15,7 @@ import (
 
 const EndPoint = "https://api.treasure-data.com"
 
-type client struct {
+type Client struct {
 	apikey string
 	*http.Client
 	Debug bool
@@ -72,8 +72,8 @@ func (tdt *tdTime) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func NewClient(apikey string) *client {
-	return &client{apikey, http.DefaultClient, false}
+func NewClient(apikey string) *Client {
+	return &Client{apikey, http.DefaultClient, false}
 }
 
 type Database struct {
@@ -82,7 +82,7 @@ type Database struct {
 	CreatedAt tdTime `json:"created_at"`
 }
 
-func (c *client) get(path string) (*http.Response, error) {
+func (c *Client) get(path string) (*http.Response, error) {
 	req, err := http.NewRequest("GET", EndPoint+path, nil)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func (c *client) get(path string) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func (c *client) post(path string, values url.Values) (*http.Response, error) {
+func (c *Client) post(path string, values url.Values) (*http.Response, error) {
 	req, err := http.NewRequest("POST", EndPoint+path, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (c *client) post(path string, values url.Values) (*http.Response, error) {
 	return c.Do(req)
 }
 
-func (c *client) DatabaseList() ([]Database, error) {
+func (c *Client) DatabaseList() ([]Database, error) {
 	res, err := c.get("/v3/database/list")
 	if err != nil {
 		return nil, err
@@ -148,7 +148,7 @@ type Table struct {
 	UpdatedAt            tdTime   `json:"updated_at"`
 }
 
-func (c *client) TableList(database string) ([]Table, error) {
+func (c *Client) TableList(database string) ([]Table, error) {
 	res, err := c.get("/v3/table/list/" + url.QueryEscape(database))
 	if err != nil {
 		return nil, err
@@ -169,7 +169,7 @@ type Job struct {
 	JobId string `json:"job_id"`
 }
 
-func (c *client) JobIssueHive(database string, query string) (*Job, error) {
+func (c *Client) JobIssueHive(database string, query string) (*Job, error) {
 	params := make(url.Values)
 	params.Set("query", query)
 	res, err := c.post("/v3/job/issue/hive/"+url.QueryEscape(database), params)
@@ -186,7 +186,7 @@ func (c *client) JobIssueHive(database string, query string) (*Job, error) {
 	return &r, nil
 }
 
-func (c *client) JobIssueHiveWithPriority(database string, query string, priority int) (*Job, error) {
+func (c *Client) JobIssueHiveWithPriority(database string, query string, priority int) (*Job, error) {
 	params := make(url.Values)
 	params.Set("query", query)
 	params.Set("priority", fmt.Sprint(priority))
@@ -213,7 +213,7 @@ type Status struct {
 	EndAt     *tdTime `json:"end_at"`
 }
 
-func (c *client) JobStatus(jobId string) (*Status, error) {
+func (c *Client) JobStatus(jobId string) (*Status, error) {
 	res, err := c.get("/v3/job/status/" + url.QueryEscape(jobId))
 	if err != nil {
 		return nil, err
@@ -228,7 +228,7 @@ func (c *client) JobStatus(jobId string) (*Status, error) {
 	return &r, nil
 }
 
-func (c *client) JobResultFunc(jobId string, typ string, cb func(line string) error) error {
+func (c *Client) JobResultFunc(jobId string, typ string, cb func(line string) error) error {
 	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=" + url.QueryEscape(typ))
 	if err != nil {
 		return err
