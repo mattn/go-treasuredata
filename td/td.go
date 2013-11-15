@@ -10,6 +10,7 @@ import (
 
 var info = flag.Bool("i", false, "information of databases")
 var db = flag.String("d", "", "database")
+var debug = flag.Bool("D", false, "debug response")
 var query = flag.String("q", "", "query string")
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 		os.Exit(1)
 	}
 	client := treasuredata.NewClient(env)
+	client.Debug = *debug
 	databases, err := client.DatabaseList()
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +52,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = client.JobResultFunc(job.JobId, func(row []interface{}) error {
+		err = client.JobResultLineFunc(job.JobId, func(row string) error {
 			fmt.Println(row)
 			return nil
 		})
