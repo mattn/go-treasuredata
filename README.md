@@ -9,7 +9,7 @@ Go interface to [Treasure Data](http://www.treasure-data.com/)
 ## Usage
 
 ```go
-client := treasuredata.NewClient(env)
+client := treasuredata.NewClient("TREASUREDATA-API-KEY")
 job, _ := client.JobIssueHive("mydb", "select * from mytable")
 client.JobResultFunc(job.JobId, func(row []interface{}) error {
 	fmt.Println(row)
