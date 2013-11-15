@@ -3,6 +3,7 @@ package treasuredata
 import (
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -250,6 +251,54 @@ func (c *Client) JobResultFunc(jobId string, cb func([]interface{}) error) error
 			continue
 		}
 		err = cb(row)
+		if err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
+func (c *Client) JobResultColumnsFunc(jobId string, cb func([]string) error) error {
+	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=csv")
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	cr := csv.NewReader(tee(res.Body, c.Debug))
+	for {
+		cols, err := cr.Read()
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+			break
+		}
+		err = cb(cols)
+		if err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
+func (c *Client) JobResultLineFunc(jobId string, cb func(string) error) error {
+	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=json")
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	br := bufio.NewReader(tee(res.Body, c.Debug))
+	for {
+		lb, _, err := br.ReadLine()
+		if err != nil {
+			if err != io.EOF {
+				return err
+			}
+			break
+		}
+		err = cb(string(lb))
 		if err != nil {
 			return nil
 		}
