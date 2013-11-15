@@ -228,8 +228,8 @@ func (c *Client) JobStatus(jobId string) (*Status, error) {
 	return &r, nil
 }
 
-func (c *Client) JobResultFunc(jobId string, typ string, cb func(line string) error) error {
-	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=" + url.QueryEscape(typ))
+func (c *Client) JobResultFunc(jobId string, cb func([]interface{}) error) error {
+	res, err := c.get("/v3/job/result/" + url.QueryEscape(jobId) + "?format=json")
 	if err != nil {
 		return err
 	}
@@ -244,7 +244,12 @@ func (c *Client) JobResultFunc(jobId string, typ string, cb func(line string) er
 			}
 			break
 		}
-		err = cb(string(lb))
+		var row []interface{}
+		err = json.Unmarshal(lb, &row)
+		if err != nil {
+			continue
+		}
+		err = cb(row)
 		if err != nil {
 			return nil
 		}

@@ -15,7 +15,12 @@ var query = flag.String("q", "", "query string")
 func main() {
 	flag.Parse()
 
-	client := treasuredata.NewClient(os.Getenv("TREASURE_DATA_API_KEY"))
+	env := os.Getenv("TREASURE_DATA_API_KEY")
+	if env == "" {
+		fmt.Fprintln(os.Stderr, os.Args[0], ": set $TREASURE_DATA_API_KEY")
+		os.Exit(1)
+	}
+	client := treasuredata.NewClient(env)
 	databases, err := client.DatabaseList()
 	if err != nil {
 		log.Fatal(err)
@@ -45,8 +50,8 @@ func main() {
 			log.Fatal(err)
 		}
 
-		err = client.JobResultFunc(job.JobId, "json", func(line string) error {
-			fmt.Println(line)
+		err = client.JobResultFunc(job.JobId, func(row []interface{}) error {
+			fmt.Println(row)
 			return nil
 		})
 		if err != nil {
